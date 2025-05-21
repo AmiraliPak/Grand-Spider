@@ -697,4 +697,4 @@ if __name__ == '__main__':
              logger.warning("Running without Selenium support. 'use_selenium=true' requests will fail.")
         # Set debug=False for production
         debug = (os.environ.get("DEBUG") == "True")
-        app.run(host='0.0.0.0', port=5000, debug=debug)
+        app.run(host='0.0.0.0', port=5001, debug=debug)

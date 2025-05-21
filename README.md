@@ -49,13 +49,20 @@ Grand Spider is a web service that fetches HTML content from a specified URL and
    ```
    SERVICE_API_KEY=your_chosen_api_key_here
    OPENAI_API_KEY=your_openai_api_key_here
+   
+   # 'True' for debugging - Optional - Default: False
+   DEBUG=False
+
+   # Optional - e.g. '/usr/bin/chromedriver'
+   # Set the path if "driver not found" error is encountered.
+   DRIVER_PATH=path_to_chromedriver
    ```
 
 ## API Usage
 
-### Analyze a Webpage
+### Analyze a Company Website
 
-**Endpoint**: `/analyze`
+**Endpoint**: `/api/analyze-company`
 
 **Method**: `POST`
 
@@ -66,42 +73,97 @@ Grand Spider is a web service that fetches HTML content from a specified URL and
 **Request Body**:
 ```json
 {
-  "url": "https://example.com"
+  "url": "https://example.com",
+  "max_pages": 10,             // Optional, default is 10
+  "use_selenium": false        // Optional, default is false. Set true for JS-heavy sites.
 }
 ```
 
 **Example Request (curl)**:
 ```bash
-curl -X POST "http://localhost:5000/analyze" \
+curl -X POST "http://localhost:5000/api/analyze-company" \
   -H "Content-Type: application/json" \
   -H "api-key: your_chosen_api_key_here" \
-  -d '{"url": "https://example.com"}'
+  -d '{"url": "https://example.com", "max_pages": 10, "use_selenium": false}'
 ```
 
 **Success Response**:
 ```json
 {
+  "message": "Company analysis job started successfully.",
+  "job_id": "550e8400-e29b-41d4-a716-446655440000",
+  "status_url": "/api/analyze-company/550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+### Get Analysis Status
+
+**Endpoint**: `/api/analyze-company/<job_id>`
+
+**Method**: `GET`
+
+**Headers**:
+- `api-key: your_chosen_api_key_here`
+
+**Success Response**:
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
   "url": "https://example.com",
-  "description": "This webpage is a simple example domain used for illustrative purposes in documentation. It provides a brief explanation that example domains like this one are reserved for use in examples and documentation as per RFC 2606.",
-  "model_used": "gpt-4.1-nano-2025-04-14"
+  "max_pages": 10,
+  "use_selenium": false,
+  "status": "completed",
+  "created_at": 1234567890.123,
+  "found_pages_count": 5,
+  "analyzed_pages": [...],
+  "final_summary": "Company description...",
+  "error": null,
+  "crawler_used": "simple"
+}
+```
+
+### List All Jobs
+
+**Endpoint**: `/api/jobs`
+
+**Method**: `GET`
+
+**Headers**:
+- `api-key: your_chosen_api_key_here`
+
+**Success Response**:
+```json
+{
+  "total_jobs": 2,
+  "jobs": [
+    {
+      "job_id": "550e8400-e29b-41d4-a716-446655440000",
+      "url": "https://example.com",
+      "status": "completed",
+      "crawler_used": "simple",
+      "created_at": 1234567890.123,
+      "finished_at": 1234567895.123,
+      "duration_seconds": 5.0,
+      "error": null
+    }
+  ]
 }
 ```
 
 ### Health Check
 
-**Endpoint**: `/health`
+**Endpoint**: `/api/health`
 
 **Method**: `GET`
 
-**Response**:
+**Success Response**:
 ```json
 {
   "status": "ok",
-  "components": {
-    "service_api_key": "configured",
-    "openai_api_key": "configured",
-    "openai_client": "initialized"
-  }
+  "message": "Company Analyzer API is running",
+  "service_api_key_status": "configured",
+  "openai_client_status": "initialized",
+  "selenium_support": "available"
 }
 ```
 
@@ -111,6 +173,8 @@ The API returns appropriate HTTP status codes and descriptive error messages:
 
 - **400**: Bad Request (invalid URL, missing parameters)
 - **401**: Unauthorized (invalid or missing API key)
+- **404**: Not Found (job ID not found)
+- **405**: Method Not Allowed
 - **500**: Internal Server Error (unexpected issues)
 - **502**: Bad Gateway (issues fetching URL content)
 - **503**: Service Unavailable (OpenAI API issues)
