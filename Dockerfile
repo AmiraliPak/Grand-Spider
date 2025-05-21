@@ -25,4 +25,4 @@ COPY . .
 
 # 5) expose & run
 EXPOSE 5001
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5001", "grand_spider:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:5001", "grand_spider:app"]

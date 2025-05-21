@@ -6,6 +6,7 @@ services:
     image: website_grand_spider
     container_name: website_grand_spider
     restart: unless-stopped
+    network_mode: host
     ports:
       - "5001:5001"
     env_file:
