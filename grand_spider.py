@@ -57,8 +57,8 @@ except Exception as e:
     openai_client = None
 
 # --- Constants ---
-REQUEST_TIMEOUT = 15 # Increased default timeout slightly for Selenium fetches
-SELENIUM_TIMEOUT = 20 # Timeout for Selenium page loads and waits
+REQUEST_TIMEOUT = 20 # Increased default timeout slightly for Selenium fetches
+SELENIUM_TIMEOUT = 30 # Timeout for Selenium page loads and waits
 MAX_CONTENT_LENGTH = 15000
 OPENAI_MODEL = "gpt-4o-mini"
 MAX_RESPONSE_TOKENS_PAGE = 300
@@ -120,7 +120,11 @@ def selenium_crawl_website(base_url, max_pages=10):
         chrome_options.add_experimental_option('excludeSwitches', ['enable-logging'])
         # Suppress webdriver-manager logs if desired (might require specific config)
 
-        service = ChromeService(ChromeDriverManager().install())
+        driver_path = os.environ.get("DRIVER_PATH")
+        if driver_path:
+            service = ChromeService(executable_path=driver_path)
+        else:
+            service = ChromeService(ChromeDriverManager().install())
         driver = webdriver.Chrome(service=service, options=chrome_options)
         driver.set_page_load_timeout(SELENIUM_TIMEOUT) # Timeout for page loads
 
@@ -692,4 +696,5 @@ if __name__ == '__main__':
         if not SELENIUM_AVAILABLE:
              logger.warning("Running without Selenium support. 'use_selenium=true' requests will fail.")
         # Set debug=False for production
-        app.run(host='0.0.0.0', port=5000, debug=False)
+        debug = (os.environ.get("DEBUG") == "True")
+        app.run(host='0.0.0.0', port=5000, debug=debug)

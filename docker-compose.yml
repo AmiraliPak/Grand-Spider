@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  website_grand_spider:
+    build: .
+    image: website_grand_spider
+    container_name: website_grand_spider
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+    env_file:
+      - .env                   # load your environment variables
+    # environment:
+    #   - DEBUG=False
